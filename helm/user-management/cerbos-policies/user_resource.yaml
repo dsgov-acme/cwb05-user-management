@@ -1,0 +1,32 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: "default"
+  resource: user
+  importDerivedRoles:
+    - user_roles
+  rules:
+    - actions: ["create"]
+      roles:
+        - identity-client
+      effect: EFFECT_ALLOW
+
+    - actions: ["view"]
+      roles:
+        - admin
+        - reader
+        - identity-client
+      derivedRoles:
+        - self
+      effect: EFFECT_ALLOW
+
+    - actions: ["delete"]
+      roles:
+        - admin
+      effect: EFFECT_ALLOW
+
+    - actions: ["update"]
+      roles:
+        - admin
+      derivedRoles:
+        - self
+      effect: EFFECT_ALLOW

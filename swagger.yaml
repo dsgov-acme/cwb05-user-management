@@ -1,0 +1,1485 @@
+openapi: "3.0.3"
+info:
+  version: "1.0.0"
+  title: "Nuvalence User Management API"
+  description: "This is a User Role Management API"
+servers:
+  - url: "/api/v1"
+paths:
+  /users:
+    get:
+      tags:
+        - "users"
+      summary: "Get all users"
+      operationId: "getUserList"
+      parameters:
+        - in: query
+          name: roleIds
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Role ids to filter users by.
+        - in: query
+          name: email
+          required: false
+          schema:
+            type: string
+          description: An email to filter users by
+        - in: query
+          name: externalId
+          required: false
+          schema:
+            type: string
+          description: An external ID to filter users by
+        - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+          description: A name to filter users by
+        - in: query
+          name: pageNumber
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: The page number for pagination (zero-based)
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+          description: The number of items per page
+        - in: query
+          name: sortOrder
+          description: Determines direction for resulting sorting.
+          required: false
+          schema:
+            type: string
+            $ref: "#/components/schemas/SortOrder"
+        - in: query
+          name: sortBy
+          description: Field to sort users by. Email is chosen by default.
+          required: false
+          schema:
+            type: string
+            $ref: "#/components/schemas/SortUserBy"
+        - in: query
+          name: roleNames
+          description: Role names to filter users by.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          name: identityProvider
+          description: Identity Provider user is registered with.
+          example: "https://securetoken.google.com/gcp-project-name"
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: userType
+          description: User Type.
+          required: false
+          schema:
+            type: string
+            enum:
+              - agency
+              - public
+            pattern: ^(agency|public)$
+        - in: query
+          name: includeDeleted
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: includeApplicationRoles
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPageDTO"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User not found"
+    post:
+      parameters:
+        - in: query
+          name: includeApplicationRoles
+          required: false
+          schema:
+            type: boolean
+            default: false
+      tags:
+        - "users"
+      summary: "Create a user"
+      operationId: "addUser"
+      requestBody:
+        required: true
+        description: "user object"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreationRequest"
+      responses:
+        "200":
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+        "400":
+          description: "Invalid request body"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User not found"
+  /users/{id}:
+    get:
+      tags:
+        - "users"
+      summary: "Get user by user by id"
+      operationId: "getUserById"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Name of the user to retrieve "
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+        - in: query
+          name: includeApplicationRoles
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+        "404":
+          description: "User not found"
+    delete:
+      tags:
+        - "users"
+      summary: "Delete user by user Id"
+      operationId: "deleteUserById"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "id of the user to delete "
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+      responses:
+        "200":
+          description: "successful operation"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User not found"
+    put:
+      tags:
+        - "users"
+      summary: "Update user by user Id"
+      operationId: "updateUserById"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "id of the user to update"
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+        - in: query
+          name: includeApplicationRoles
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        description: "user object"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "200":
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+        "400":
+          description: "Invalid request body"
+        "403":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User not found"
+  /users/{id}/preferences:
+    get:
+      tags:
+        - "users"
+      summary: "Get preferences by user id"
+      operationId: "getUserPreferences"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the user to retrieve preferences for"
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPreferenceDTO"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User not found"
+    put:
+      tags:
+        - "users"
+      summary: "Update preferences for a user with ID"
+      operationId: "updatePreferences"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the user whose preferences are being updated"
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+      requestBody:
+        required: true
+        description: "Preferences object"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserPreferenceDTO"
+      responses:
+        "200":
+          description: "Successful operation"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User not found"
+  /users/{id}/roles/{roleId}:
+    put:
+      tags:
+        - "users"
+      summary: "add a role to a user"
+      operationId: "addRoleToUser"
+      parameters:
+        - name: id
+          in: path
+          description: "id of the user to add role to"
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roleId
+          in: path
+          description: "id of the role to add to user"
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: "successful operation"
+        "403":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User or role not found"
+    delete:
+      tags:
+        - "users"
+      summary: "Delete a role from a user"
+      operationId: "deleteRoleFromUser"
+      parameters:
+        - name: id
+          in: path
+          description: "id of the user to delete role from"
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roleId
+          in: path
+          description: "id of the role to delete from user"
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: "successful operation"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User or role not found"
+  /myself:
+    get:
+      tags:
+        - "myself"
+      summary: "Get current user information"
+      operationId: "getMySelf"
+      responses:
+        "200":
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+        "404":
+          description: "User not found"
+    put:
+      tags:
+        - "myself"
+      summary: "Update current user information"
+      operationId: "updateMySelf"
+      requestBody:
+        required: true
+        description: "user object"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "200":
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+        "400":
+          description: "Invalid request body"
+        "403":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User not found"
+  /roles:
+    put:
+      tags:
+        - "roles"
+      summary: "Inserts or updates a role."
+      operationId: "upsertRole"
+      requestBody:
+        required: true
+        description: "Role update request object"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleUpsertRequest"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleDTO"
+        "400":
+          description: "Invalid request body"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "Role not found"
+    get:
+      tags:
+        - "roles"
+      summary: "Get all roles"
+      operationId: "getAllRoles"
+      parameters:
+        - name: "resource"
+          in: "query"
+          description: "Name of the resource"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllRoles"
+        "401":
+          description: "You are unauthorized to make this request"
+  /roles/{id}:
+    delete:
+      tags:
+        - "roles"
+      summary: "Delete role by id"
+      operationId: "deleteRoleById"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of role to delete"
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+        - name: "resource"
+          in: "query"
+          description: "Name of the resource"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "Successful operation"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "User not found"
+    get:
+      tags:
+        - "roles"
+      summary: "Get role by ID."
+      operationId: "getRoleById"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of the role"
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "Role not found"
+  /default-roles/{userType}:
+    put:
+      tags:
+        - "roles"
+      summary: "Inserts or updates default roles."
+      operationId: "upsertDefaultRoles"
+      parameters:
+        - name: userType
+          in: path
+          description: "user type to delete default roles for"
+          required: true
+          schema:
+            type: string
+            pattern: ^(agency|public)$
+      requestBody:
+        required: true
+        description: "Role update request object"
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                format: uuid
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+        "400":
+          description: "Invalid request body"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "Role not found"
+    delete:
+      tags:
+        - "defaultRoles"
+      summary: "Delete default roles for a user type"
+      operationId: "deleteDefaultRoles"
+      parameters:
+        - name: userType
+          in: path
+          description: "user type to delete default roles for"
+          required: true
+          schema:
+            type: string
+            pattern: ^(agency|public)$
+      responses:
+        "204":
+          description: "Successful operation"
+        "401":
+          description: "You are unauthorized to make this request"
+    get:
+      tags:
+        - "defaultRoles"
+      summary: "Get default roles for a user type"
+      operationId: "getDefaultRoles"
+      parameters:
+        - name: userType
+          in: path
+          description: "user type to delete default roles for"
+          required: true
+          schema:
+            type: string
+            pattern: ^(agency|public)$
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+        "401":
+          description: "You are unauthorized to make this request"
+  /permission:
+    post:
+      tags:
+        - "permission"
+      summary: "Create a permission"
+      operationId: "addPermission"
+      requestBody:
+        required: true
+        description: "permission object"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrUpdatePermissionDTO"
+      responses:
+        "201":
+          description: "successful operation"
+        "400":
+          description: "Invalid request body"
+        "401":
+          description: "You are unauthorized to make this request"
+    get:
+      tags:
+        - "permission"
+      summary: "Get all permissions"
+      operationId: "getAllPermissions"
+      responses:
+        "200":
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AllPermissions"
+        "401":
+          description: "You are unauthorized to make this request"
+  /permission/{id}:
+    delete:
+      tags:
+        - "permission"
+      summary: "Delete permission by id"
+      operationId: "deletePermissionById"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of permission to delete"
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "successful operation"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "Permission not found"
+    get:
+      tags:
+        - "permission"
+      summary: "get an individual permission and its applications"
+      operationId: "getPermissionById"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of permission"
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+      responses:
+        "200":
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionDTO'
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "Permission not found"
+    put:
+      tags:
+        - "permission"
+      summary: "updates a permission"
+      operationId: "updatePermission"
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "Id of permission to update"
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+      requestBody:
+        required: true
+        description: "permission object"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrUpdatePermissionDTO"
+      responses:
+        "201":
+          description: "successful operation"
+        "401":
+          description: "You are unauthorized to make this request"
+        "404":
+          description: "Permission not found"
+  /languages/:
+    get:
+      tags:
+        - "languages"
+      summary: "Return all supported languages"
+      operationId: "getSupportedLanguages"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: array
+                example: [ { id: "1234", name: "English", languageStandardId: "en", localName: "English" } ]
+                items:
+                  $ref: "#/components/schemas/LanguageDTO"
+  /applications:
+    get:
+      tags:
+        - "applications"
+      summary: "Return all applications"
+      operationId: "getApplications"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: array
+                example: [ { id: "1234", name: "User Management Application"} ]
+                items:
+                  $ref: "#/components/schemas/ApplicationDTO"
+  /applications/{id}:
+    get:
+      tags:
+        - "applications"
+      summary: "Returns a single application."
+      operationId: "getApplicationById"
+      parameters:
+        - name: "id"
+          in: path
+          description: "ID for the application."
+          required: true
+          schema:
+            type: "string"
+            format: uuid
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationDTO"
+  /application/roles:
+    get:
+      tags:
+        - "application"
+      summary: "Returns all active application roles."
+      operationId: "getActiveApplicationRoles"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PermissionDTO"
+    put:
+      tags:
+        - "application"
+      summary: "Updates the set of application roles for a given application."
+      operationId: "updateApplicationRoles"
+      requestBody:
+        required: true
+        description: "Roles"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationRolesDTO"
+      responses:
+        "204":
+          description: "Successful operation"
+  /profiles/employers:
+    get:
+      summary: Get all employer profiles.
+      operationId: getEmployerProfiles
+      tags: [ 'Profiles' ]
+      parameters:
+        - in: query
+          name: fein
+          description: Full match for fein field.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: name
+          description: Exact or partial match for fields legalName and otherNames.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: type
+          description: Exact match for type field.
+          required: false
+          schema:
+            type: string
+            pattern: '^(CORPORATION|SOLE_PROPRIETORSHIP|PARTNERSHIP|LLC|LLP)$'
+        - in: query
+          name: industry
+          description: Partial match for type industry.
+          required: false
+          schema:
+            type: string
+        - $ref: "#/components/parameters/sortByEmployerProfile"
+        - $ref: "#/components/parameters/sortOrder"
+        - $ref: "#/components/parameters/pageNumber"
+        - $ref: "#/components/parameters/pageSize"
+      responses:
+        '200':
+          description: The requested employer profiles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageEmployerProfileResponseModel'
+    post:
+      summary: Create a new employer profile.
+      operationId: postEmployerProfile
+      tags: [ 'Profiles' ]
+      requestBody:
+        description: The employer profile creation request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployerProfileCreateModel'
+      responses:
+        '200':
+          description: The created employer profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployerProfileResponseModel'
+  /profiles/employers/{profileId}:
+    get:
+      summary: Get a single employer profile by ID.
+      operationId: getEmployerProfile
+      tags: [ 'Profiles' ]
+      parameters:
+        - in: path
+          name: profileId
+          description: The employer profile id to search on.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The employer profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployerProfileResponseModel'
+    put:
+      summary: Update an existing employer profile.
+      operationId: updateEmployerProfile
+      tags: [ 'Profiles' ]
+      parameters:
+        - in: path
+          name: profileId
+          description: The employer profile id to search on.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: The employer profile update request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployerProfileUpdateModel'
+      responses:
+        '200':
+          description: The updated employer profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployerProfileResponseModel'
+  /profiles/individuals:
+    get:
+      summary: Get all individual profiles.
+      operationId: getIndividualProfiles
+      tags: [ 'Profiles' ]
+      parameters:
+        - in: query
+          name: ssn
+          description: Exact match for field ssn.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: name
+          description: Partial match for name.
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: email
+          description: Partial match for email.
+          required: false
+          schema:
+            type: string
+        - $ref: "#/components/parameters/sortByIndividualProfile"
+        - $ref: "#/components/parameters/sortOrder"
+        - $ref: "#/components/parameters/pageNumber"
+        - $ref: "#/components/parameters/pageSize"
+      responses:
+        '200':
+          description: The requested individuals profiles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageIndividualProfileResponseModel'
+    post:
+      summary: Create a new individual profile.
+      operationId: postIndividualProfile
+      tags: [ 'Profiles' ]
+      requestBody:
+        description: The individual profile creation request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndividualProfileCreateModel'
+      responses:
+        '200':
+          description: The created individual profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndividualProfileResponseModel'
+  /profiles/individuals/{profileId}:
+    get:
+      summary: Get a single individual profile by ID.
+      operationId: getIndividualProfile
+      tags: [ 'Profiles' ]
+      parameters:
+        - in: path
+          name: profileId
+          description: The individual profile id to search on.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The individual profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndividualProfileResponseModel'
+    put:
+      summary: Update an existing individual profile.
+      operationId: updateIndividualProfile
+      tags: [ 'Profiles' ]
+      parameters:
+        - in: path
+          name: profileId
+          description: The individual profile id to search on.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: The individual profile update request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndividualProfileUpdateModel'
+      responses:
+        '200':
+          description: The updated employer profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndividualProfileResponseModel'
+components:
+  schemas:
+    EmployerProfileCreateModel:
+      type: object
+      required:
+        - fein
+        - legalName
+        - type
+        - industry
+        - summaryOfBusiness
+        - businessPhone
+        - mailingAddress
+      properties:
+        fein:
+          type: string
+        legalName:
+          type: string
+        otherNames:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          pattern: '^(CORPORATION|SOLE_PROPRIETORSHIP|PARTNERSHIP|LLC|LLP)$'
+        industry:
+          type: string
+        summaryOfBusiness:
+          type: string
+        businessPhone:
+          type: string
+        mailingAddress:
+          $ref: '#/components/schemas/AddressModel'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressModel'
+    EmployerProfileUpdateModel:
+      allOf:
+        - $ref: '#/components/schemas/EmployerProfileCreateModel'
+    EmployerProfileResponseModel:
+      allOf:
+        - $ref: '#/components/schemas/EmployerProfileCreateModel'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdBy:
+              type: string
+            lastUpdatedBy:
+              type: string
+            createdTimestamp:
+              type: string
+              format: date-time
+            lastUpdatedTimestamp:
+              type: string
+              format: date-time
+    PageEmployerProfileResponseModel:
+      description: Paged response detailing a collection of employer profiles.
+      type: object
+      required:
+        - items
+        - pagingMetadata
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmployerProfileResponseModel"
+        pagingMetadata:
+          $ref: "#/components/schemas/PagingMetadata"
+    IndividualProfileCreateModel:
+      type: object
+      required:
+        - ssn
+        - mailingAddress
+        - primaryAddress
+        - firstName
+        - lastName
+        - email
+        - phoneNumber
+      properties:
+        ssn:
+          type: string
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        mailingAddress:
+          $ref: '#/components/schemas/AddressModel'
+        primaryAddress:
+          $ref: '#/components/schemas/AddressModel'
+    IndividualProfileUpdateModel:
+      allOf:
+        - $ref: '#/components/schemas/IndividualProfileCreateModel'
+    IndividualProfileResponseModel:
+      allOf:
+        - $ref: '#/components/schemas/IndividualProfileCreateModel'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdBy:
+              type: string
+            lastUpdatedBy:
+              type: string
+            createdTimestamp:
+              type: string
+              format: date-time
+            lastUpdatedTimestamp:
+              type: string
+              format: date-time
+    PageIndividualProfileResponseModel:
+      description: Paged response detailing a collection of individual profiles.
+      type: object
+      required:
+        - items
+        - pagingMetadata
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/IndividualProfileResponseModel"
+        pagingMetadata:
+          $ref: "#/components/schemas/PagingMetadata"
+    AddressModel:
+      type: object
+      required:
+        - address1
+        - address2
+        - city
+        - state
+        - postalCode
+        - country
+        - county
+      properties:
+        address1:
+          type: string
+        address2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        county:
+          type: string
+    AllRoles:
+      type: array
+      items:
+        $ref: '#/components/schemas/RoleDTO'
+      example:
+        - id: 1
+          roleName: Regional Manager
+        - id: 2
+          roleName: Assistant to the Regional Manager
+    UserPageDTO:
+      type: object
+      required:
+        - users
+        - pagingMetadata
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDTO'
+        pagingMetadata:
+          $ref: "#/components/schemas/PagingMetadata"
+    PagingMetadata:
+      description: Paging metadata in accordance with https://datatracker.ietf.org/doc/html/rfc8977
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          format: int64
+          minimum: 0
+        pageSize:
+          type: integer
+          minimum: 0
+          maximum: 200
+        pageNumber:
+          type: integer
+          minimum: 0
+        nextPage:
+          type: string
+    AllPermissions:
+      type: array
+      items:
+        $ref: '#/components/schemas/PermissionDTO'
+    UserDTO:
+      type: object
+      required:
+        - email
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        externalId:
+          type: string
+        identityProvider:
+          type: string
+        userType:
+          type: string
+        deleted:
+          type: boolean
+        deletedOn:
+          type: string
+          format: date-time
+        assignedRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignedRoleDTO'
+        applicationRoles:
+          type: array
+          items:
+            type: string
+        preferences:
+          $ref: '#/components/schemas/UserPreferenceDTO'
+        profile:
+          $ref: '#/components/schemas/IndividualProfileResponseModel'
+    AssignedRoleDTO:
+      type: object
+      required:
+        - roleName
+      properties:
+        id:
+          type: string
+          format: uuid
+        roleName:
+          type: string
+        description:
+          type: string
+    RoleDTO:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+        name:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    RoleUpsertRequest:
+      type: object
+      required:
+        - name
+        - description
+        - permissions
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    UserPreferenceDTO:
+      type: object
+      properties:
+        preferredLanguage:
+          type: string
+        preferredCommunicationMethod:
+          type: string
+    PermissionDTO:
+      type: object
+      required:
+        - name
+        - description
+        - group
+        - applicationRole
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        group:
+          type: string
+        applicationRole:
+          type: string
+    PermissionListDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+    CreateOrUpdatePermissionDTO:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        application:
+          type: string
+          format: uuid
+        applicationRole:
+          type: string
+    UserRoleDTO:
+      type: object
+      required:
+        - userId
+        - roleId
+      properties:
+        userId:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+    UserCreationRequest:
+      type: object
+      required:
+        - externalId
+        - identityProvider
+        - userType
+      properties:
+        firstName:
+          type: string
+          description: User's first name.
+        middleName:
+          type: string
+          description: User's middle name.
+        lastName:
+          type: string
+          description: User's last name.
+        phoneNumber:
+          type: string
+          description: User's phone Number.
+        email:
+          type: string
+          description: User's email.
+        externalId:
+          type: string
+          description: User ID provided by Identity Provider.
+        identityProvider:
+          type: string
+          description: Identity Provider that externalId originates from. This should match iss claim on JWT.
+        userType:
+          type: string
+          description: Type of user. Current supported values are "agency" or "public".
+          pattern: ^(agency|public)$
+        profile:
+          $ref: '#/components/schemas/IndividualProfileCreateModel'
+    UserUpdateRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+    ValidatePermissionDTO:
+      type: object
+      required:
+        - allow
+      properties:
+        allow:
+          type: boolean
+    LanguageDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        languageName:
+          type: string
+          example: "English"
+        languageStandardId:
+          type: string
+          example: "en"
+        localName:
+          type: string
+          example: "English"
+    TokenRefreshPacket:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    ApplicationDTO:
+      type: object
+      required:
+        - name
+        - displayName
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "user_management_application"
+        displayName:
+          type: string
+          example: "User Management Application"
+    SimpleListDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        displayName:
+          type: string
+    ApplicationRolesDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/PermissionDTO"
+    SortOrder:
+      type: string
+      default: ASC
+      pattern: ^(ASC|DESC)$
+    SortUserBy:
+      type: string
+      default: email
+      pattern: ^(id|externalId|email|createdAt|firstName|lastName)$
+    SortByEmployerProfile:
+      type: string
+      default: createdTimestamp
+      pattern: ^(createdTimestamp|lastUpdatedTimestamp|legalName)$
+    SortByIndividualProfile:
+      type: string
+      default: createdTimestamp
+      pattern: ^(createdTimestamp|lastUpdatedTimestamp)$
+  parameters:
+    sortByEmployerProfile:
+      in: query
+      name: sortBy
+      description: Field to sort by. createdTimestamp is chosen by default.
+      required: false
+      schema:
+        type: string
+        $ref: "#/components/schemas/SortByEmployerProfile"
+    sortByIndividualProfile:
+      in: query
+      name: sortBy
+      description: Field to sort by. createdTimestamp is chosen by default.
+      required: false
+      schema:
+        type: string
+        $ref: "#/components/schemas/SortByIndividualProfile"
+    sortOrder:
+      in: query
+      name: sortOrder
+      description: Determines direction for resulting sorting.
+      required: false
+      schema:
+        type: string
+        $ref: "#/components/schemas/SortOrder"
+    pageNumber:
+      in: query
+      name: pageNumber
+      description: the page number to show transactions for.
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    pageSize:
+      in: query
+      name: pageSize
+      description: the number of transactions to retrieve.
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
