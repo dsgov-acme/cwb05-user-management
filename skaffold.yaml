@@ -6,10 +6,10 @@ profiles:
   - name: local
     build:
       googleCloudBuild:
-        projectId: cwb05-services
+        projectId: cwb05-shared-services-2bd3
         gradleImage: gradle:8.2.1-jdk17-alpine
       artifacts:
-        - image: us-east4-docker.pkg.dev/cwb05-services/application/cwb05-user-management
+        - image: -docker.pkg.dev/cwb05-shared-services-2bd3/application/cwb05-user-management
           jib:
             type: gradle
             project: service
@@ -23,8 +23,8 @@ profiles:
           chartPath: helm/user-management
           # Ref: https://skaffold.dev/docs/deployers/helm/#image-configuration
           setValueTemplates:
-            image.repository: "{{.IMAGE_REPO_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
-            image.tag: "{{.IMAGE_TAG_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}@{{.IMAGE_DIGEST_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+            image.repository: "{{.IMAGE_REPO__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}"
+            image.tag: "{{.IMAGE_TAG__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}@{{.IMAGE_DIGEST__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}"
           setValues:
             environment: user-management
           valuesFiles:
@@ -75,10 +75,10 @@ profiles:
   - name: dev
     build:
       googleCloudBuild:
-        projectId: cwb05-services
+        projectId: cwb05-shared-services-2bd3
         gradleImage: gradle:8.2.1-jdk17-alpine
       artifacts:
-        - image: us-east4-docker.pkg.dev/cwb05-services/application/cwb05-user-management
+        - image: -docker.pkg.dev/cwb05-shared-services-2bd3/application/cwb05-user-management
           jib:
             type: gradle
             project: service
@@ -92,8 +92,8 @@ profiles:
           chartPath: helm/user-management
           # Ref: https://skaffold.dev/docs/deployers/helm/#image-configuration
           setValueTemplates:
-            image.repository: "{{.IMAGE_REPO_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
-            image.tag: "{{.IMAGE_TAG_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}@{{.IMAGE_DIGEST_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+            image.repository: "{{.IMAGE_REPO__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}"
+            image.tag: "{{.IMAGE_TAG__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}@{{.IMAGE_DIGEST__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}"
           setValues:
             environment: user-management
           valuesFiles:
@@ -102,10 +102,10 @@ profiles:
   - name: prod
     build:
       googleCloudBuild:
-        projectId: cwb05-services
+        projectId: cwb05-shared-services-2bd3
         gradleImage: gradle:8.2.1-jdk17-alpine
       artifacts:
-        - image: us-east4-docker.pkg.dev/cwb05-services/application/cwb05-user-management
+        - image: -docker.pkg.dev/cwb05-shared-services-2bd3/application/cwb05-user-management
           jib:
             type: gradle
             project: service
@@ -119,8 +119,8 @@ profiles:
           chartPath: helm/user-management
           # Ref: https://skaffold.dev/docs/deployers/helm/#image-configuration
           setValueTemplates:
-            image.repository: "{{.IMAGE_REPO_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
-            image.tag: "{{.IMAGE_TAG_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}@{{.IMAGE_DIGEST_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+            image.repository: "{{.IMAGE_REPO__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}"
+            image.tag: "{{.IMAGE_TAG__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}@{{.IMAGE_DIGEST__docker_pkg_dev_cwb05_shared_services_2bd3_application_cwb05_user_management}}"
           setValues:
             environment: user-management
           valuesFiles:

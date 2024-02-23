@@ -19,9 +19,9 @@ env:
   DB_CONNECTION_URL: "jdbc:postgresql://user-management-postgres:5432/local-user-management-db"
   DB_USERNAME: "root"
   DB_PASSWORD: "root"
-  GCP_PROJECT_ID: "cwb05-dev"
+  GCP_PROJECT_ID: "cwb05-dev-dd4e"
   CERBOS_URI: "127.0.0.1:3592"
-  SELF_SIGN_PUBLIC_KEY: "${sm://projects/cwb05-dev/secrets/cwb05-self-signed-token-public-key/versions/latest}"
+  SELF_SIGN_PUBLIC_KEY: "${sm://projects/cwb05-dev-dd4e/secrets/cwb05-self-signed-token-public-key/versions/latest}"
   TOKEN_PRIVATE_KEY_SECRET: "cwb05-self-signed-token-private-key"
   TOKEN_ISSUER: "cwb05"
   TOKEN_PRIVATE_KEY_VERSION: "latest"
@@ -29,6 +29,6 @@ env:
   PUBSUB_EMULATOR_HOST: "pubsub-emulator-service:8085" # set actual "host:port" to enable or false to disable
   PUBSUB_EMULATOR_ENABLED: true # set to true to enable emulator
   # topics separated by comma
-  PUBSUB_SUBSCRIPTIONS: "projects/cwb05-dev/subscriptions/APPLICATION_ROLE_REPORTING_SUBSCRIPTION"
+  PUBSUB_SUBSCRIPTIONS: "projects/cwb05-dev-dd4e/subscriptions/APPLICATION_ROLE_REPORTING_SUBSCRIPTION"
   SUBSCRIBER_TOPICS: "APPLICATION_ROLE_REPORTING"
-  PUBLISHER_TOPICS: projects/cwb05-dev/topics/APPLICATION_ROLE_REPORTING
+  PUBLISHER_TOPICS: projects/cwb05-dev-dd4e/topics/APPLICATION_ROLE_REPORTING
