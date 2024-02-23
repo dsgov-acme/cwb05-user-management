@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!--    Initial change set to create tables -->
+    <include file="Initial-Tables.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="add-role-permission-table" author="gmisail">
+        <createTable tableName="role-permission">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="role_id" type="uuid">
+                <constraints foreignKeyName="fk_perm_role_id"
+                             references="role(id)"
+                             nullable="false"/>
+            </column>
+            <column name="permission_id" type="uuid">
+                <constraints foreignKeyName="fk_perm_permission_id"
+                             references="permission(id)"
+                             nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="rename-role-permission" author="gmisail">
+        <renameTable oldTableName="role-permission" newTableName="role_permission"/>
+    </changeSet>
+    <changeSet id="add-group-active-app_id-to-permission" author="none">
+        <addColumn tableName="permission">
+            <column name="application_id" type="uuid">
+                <constraints foreignKeyName="fk_perm_app_id"
+                             references="application(id)"
+                             nullable="false"/>
+            </column>
+
+            <column name="group" type="varchar(128)">
+                <constraints nullable="true"/>
+            </column>
+
+            <column name="active" type="bool">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="add-role-name-description" author="gmisail">
+        <addColumn tableName="role">
+            <column type="varchar(255)" name="description">
+                <constraints nullable="true" unique="false" />
+            </column>
+        </addColumn>
+
+        <renameColumn tableName="role" oldColumnName="role_name" newColumnName="name"/>
+    </changeSet>
+    <changeSet id="add-application-role" author="gmisail">
+        <addColumn tableName="permission">
+            <column type="varchar(255)" name="application_role">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="rename-group-column" author="gmisail">
+        <renameColumn tableName="permission" oldColumnName="group" newColumnName="permission_group"/>
+    </changeSet>
+    <changeSet id="remove-redundant-columns" author="gmisail">
+        <dropColumn tableName="permission" columnName="display_name"/>
+        <dropColumn tableName="role" columnName="display_name"/>
+    </changeSet>
+    <changeSet id="remove-redundant-id-for-link-tables" author="gmisail">
+        <dropColumn tableName="role_permission" columnName="id"/>
+        <dropColumn tableName="user_role" columnName="id"/>
+        <dropColumn tableName="application_permission" columnName="id"/>
+
+        <addPrimaryKey tableName="role_permission" columnNames="permission_id, role_id"/>
+        <addPrimaryKey tableName="user_role" columnNames="user_id, role_id"/>
+        <addPrimaryKey tableName="application_permission" columnNames="application_id, permission_id"/>
+    </changeSet>
+    <changeSet id="add-usertype-and-identityproider-to-user_table" author="jstgelais">
+        <!-- These constraints don't get created in H2 databases used for unit testing -->
+        <sql dbms="postgresql">
+            ALTER TABLE user_table DROP CONSTRAINT IF EXISTS user_table_email_key;
+            ALTER TABLE user_table DROP CONSTRAINT IF EXISTS user_table_external_id_key;
+        </sql>
+        <addColumn tableName="user_table">
+            <column name="identity_provider" type="varchar(1024)">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_type" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addUniqueConstraint tableName="user_table" columnNames="identity_provider,external_id" />
+    </changeSet>
+    <changeSet id="make-user_table-external_id-nonnullable" author="jstgelais">
+        <addNotNullConstraint tableName="user_table" columnName="external_id" />
+    </changeSet>
+    <changeSet id="update-user-preference-table" author="acalderon">
+        <dropTable cascadeConstraints="true" tableName="user_preference"/>
+        <createTable tableName="user_preference">
+            <column name="user_id" type="uuid">
+                <constraints primaryKey="true"
+                             foreignKeyName="fk_user_preference_id"
+                             references="user_table(id)"
+                             nullable="false" />
+            </column>
+            <column name="preferred_language" type="varchar(17)">
+                <constraints nullable="true" unique="false" />
+            </column>
+            <column name="preferred_communication_method" type="varchar(17)">
+                <constraints nullable="true" unique="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="add-new-field-to-user-table" author="acalderon">
+        <dropColumn tableName="user_table" columnName="display_name"/>
+        <addColumn tableName="user_table">
+            <column name="first_name" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="user_table">
+            <column name="middle_name" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="user_table">
+            <column name="last_name" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="user_table">
+            <column name="phone_number" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="update-user-type-values" author="deibys.quintero">
+        <update tableName="user_table">
+            <column name="user_type" value="agency" />
+            <where>user_type = '0'</where>
+        </update>
+        <update tableName="user_table">
+            <column name="user_type" value="public" />
+            <where>user_type = '1'</where>
+        </update>
+    </changeSet>
+    <changeSet id="create-soft-delete-fields" author="acalderon">
+        <sql dbms="postgresql">
+            ALTER TABLE user_table DROP CONSTRAINT IF EXISTS user_table_identity_provider_external_id_key;
+        </sql>
+        <addColumn tableName="user_table" >
+            <column name="deleted" defaultValue="false" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addColumn tableName="user_table" >
+            <column name="deleted_on" defaultValue="null" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+        <addUniqueConstraint tableName="user_table" columnNames="identity_provider,external_id,deleted,deleted_on"/>
+    </changeSet>
+    <changeSet id="create-generated-column-full-name" author="acalderon">
+        <sql dbms="postgresql">
+            ALTER TABLE user_table
+                ADD full_name varchar(255) GENERATED ALWAYS AS (first_name || ' ' || last_name) STORED;
+        </sql>
+        <sql dbms="h2">
+            ALTER TABLE user_table
+                ADD full_name varchar(255) AS (CONCAT(first_name, ' ', last_name));
+        </sql>
+    </changeSet>
+    <changeSet id="create-default-roles-table" author="acalderon">
+        <createTable tableName="default_role">
+            <column name="role_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_type" type="varchar(255)">
+                <constraints nullable="false" unique="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_role_default_role"
+                                 baseTableName="default_role" baseColumnNames="role_id"
+                                 referencedTableName="role" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="default_roles_identify" author="acalderon" dbms="postgresql">
+        <sql> ALTER TABLE default_role REPLICA IDENTITY FULL; </sql>
+    </changeSet>
+    <changeSet id="create-default-roles" author="dortega">
+        <sql dbms="postgresql">
+            -- add app roles to default roles
+            update "role" set "name" = 'public_default', description = 'Public user default role' where id = '6c319f99-977e-4376-8fed-530464774ab6';
+
+            insert into role_permission (role_id, permission_id)
+            select '6c319f99-977e-4376-8fed-530464774ab6', p.id  from "permission" p where p.application_role in (
+                'dm:document-uploader',
+                'um:basic',
+                'wm:employer-user',
+                'wm:individual-user',
+                'wm:transaction-submitter',
+                'wm:public-profile-user',
+                'wm:record-submitter'
+            );
+
+            update "role" set "name" = 'agency_default', description = 'Agency user default role' where id = 'fd71db5b-0109-4478-956b-1e2a4af28087';
+
+            insert into role_permission (role_id, permission_id)
+            select 'fd71db5b-0109-4478-956b-1e2a4af28087', p.id  from "permission" p where p.application_role in (
+                'as:event-reader',
+                'dm:document-reviewer',
+                'dm:document-uploader',
+                'um:reader',
+                'um:admin',
+                'wm:agency-profile-admin',
+                'wm:transaction-admin',
+                'wm:transaction-config-admin',
+                'wm:record-admin',
+                'ns:notification-admin');
+
+            -- configure default roles for user types
+            insert into default_role (role_id, user_type) values ('6c319f99-977e-4376-8fed-530464774ab6', 'PUBLIC');
+            insert into default_role (role_id, user_type) values ('fd71db5b-0109-4478-956b-1e2a4af28087', 'AGENCY');
+
+            -- assign default roles to existing users
+            insert into user_role (user_id, role_id)
+            select id, '6c319f99-977e-4376-8fed-530464774ab6'::uuid from user_table ut where ut.user_type = 'public'
+            union all
+            select id, 'fd71db5b-0109-4478-956b-1e2a4af28087'::uuid from user_table ut where ut.user_type = 'agency';
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-employer_profile-table" author="jcsuarezm">
+        <createTable tableName="employer_profile">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_employer_profile"/>
+            </column>
+            <column name="fein" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="legal_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="business_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="industry" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="summary_of_business" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="business_phone" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_by" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-employer_profile_other_names-table" author="jcsuarezm">
+        <createTable tableName="employer_profile_other_names">
+            <column name="employer_profile_id" type="UUID">
+                <constraints nullable="false" primaryKey="false" foreignKeyName="fk_employer_profile_other_names" references="employer_profile(id)"/>
+            </column>
+            <column name="other_names" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-individual_profile-table" author="jcsuarezm">
+        <createTable tableName="individual_profile">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_individual_profile"/>
+            </column>
+            <column name="ssn" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="middle_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_by" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_timestamp" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-address-table" author="jcsuarezm">
+        <createTable tableName="address">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_address"/>
+            </column>
+            <column name="address1" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address2" type="VARCHAR(255)" />
+            <column name="city" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postal_code" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="county" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="individual_for_mailing_id" type="UUID">
+                <constraints nullable="true" foreignKeyName="fk_address_individual_mailing" references="individual_profile(id)"/>
+            </column>
+            <column name="individual_for_primary_address_id" type="UUID">
+                <constraints nullable="true" foreignKeyName="fk_address_individual_primary" references="individual_profile(id)"/>
+            </column>
+            <column name="employer_for_mailing_id" type="UUID">
+                <constraints nullable="true" foreignKeyName="fk_address_employer_mailing" references="employer_profile(id)"/>
+            </column>
+            <column name="employer_for_locations_id" type="UUID">
+                <constraints nullable="true" foreignKeyName="fk_address_employer_locations" references="employer_profile(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="make-user-email-nullable" author="jcsuarezm">
+        <dropNotNullConstraint
+                columnDataType="varchar(255)"
+                columnName="email"
+                schemaName="public"
+                tableName="user_table"/>
+    </changeSet>
+
+    <changeSet id="add-individual-fk-user" author="jcsuarezm">
+        <addColumn tableName="user_table">
+            <column name="profile_id" type="uuid">
+                <constraints nullable="true" foreignKeyName="fk_user_profile" references="individual_profile(id)" />
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

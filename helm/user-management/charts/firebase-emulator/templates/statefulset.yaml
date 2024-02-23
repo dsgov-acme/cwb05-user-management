@@ -1,0 +1,53 @@
+# Conditionally create the StatefulSet for local; unneeded in GKE.
+{{- if .Values.createIngress }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-management-firebase-emulator
+  namespace: {{ .Values.namespace | default "dsgov" }}
+  labels:
+    {{- include "firebase-emulator.labels" . | nindent 4 }}
+spec:
+  serviceName: user-management-firebase-emulator
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "firebase-emulator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "firebase-emulator.selectorLabels" . | nindent 8 }}
+    spec:
+      hostAliases:
+        - ip: "0.0.0.0"
+          hostnames:
+            - "firebase-auth-emulator.dsgov.test"
+      containers:
+        - name: user-management-firebase-emulator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- include "env.tpl" .Values.env | indent 12 }}
+          ports:
+            - name: ui
+              containerPort: 4000
+              protocol: TCP
+            - name: auth
+              containerPort: 9099
+              protocol: TCP
+            - name: functions
+              containerPort: 5001
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /firebase/emulator-data
+              name: firebase-emulator-data
+  volumeClaimTemplates:
+    - metadata:
+        name: firebase-emulator-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+  {{- end }}

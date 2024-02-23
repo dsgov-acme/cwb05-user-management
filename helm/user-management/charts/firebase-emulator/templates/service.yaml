@@ -1,0 +1,29 @@
+# Conditionally create the Service for local; unneeded in GKE.
+{{- if .Values.createIngress }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-management-firebase-emulator
+  namespace: {{ .Values.namespace | default "dsgov" }}
+spec:
+  selector:
+    {{- include "firebase-emulator.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: ui
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
+      nodePort: 30300
+    - name: auth
+      protocol: TCP
+      port: 9099
+      targetPort: 9099
+      nodePort: 30301
+    - name: functions
+      protocol: TCP
+      port: 5001
+      targetPort: 5001
+      nodePort: 30302
+  sessionAffinity: None
+  type: NodePort
+{{- end }}

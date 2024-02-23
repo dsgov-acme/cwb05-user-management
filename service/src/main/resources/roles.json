@@ -1,0 +1,121 @@
+{
+  "name": "user-management",
+  "roles": [
+    {
+      "applicationRole": "um:basic",
+      "name": "Basic",
+      "description": "Can read general options like languages and preference types. Can read and update own user and preferences.",
+      "group": "user-management"
+    },
+    {
+      "applicationRole": "um:reader",
+      "name": "Reader",
+      "description": "Can read all users and preferences. Can read and update own user and preferences.",
+      "group": "user-management"
+    },
+    {
+      "applicationRole": "um:admin",
+      "name": "Admin",
+      "description": "Can read and update all resources and configurations. Can also delete users and their preferences.",
+      "group": "user-management",
+      "capabilities": [
+        "admin-console",
+        "public-user-management",
+        "agency-user-management",
+        "user-role-management"
+      ]
+    },
+    {
+      "applicationRole": "um:application-client",
+      "name": "Application Client",
+      "description": "Can register new roles or permissions.",
+      "group": "user-management"
+    },
+    {
+      "applicationRole": "um:identity-client",
+      "name": "Identity Client",
+      "description": "Can create and read users.",
+      "group": "user-management"
+    },
+    {
+      "applicationRole": "um:agency-profile-admin",
+      "name": "Agency Profile Admin",
+      "description": "Can create, update and delete any profile type.",
+      "group": "user-management",
+      "capabilities": [
+        "individual-profile-create",
+        "individual-profile-read",
+        "individual-profile-update",
+        "individual-profile-invite",
+        "individual-profile-link-update",
+        "individual-profile-link-read",
+        "individual-profile-link-delete",
+        "individual-profile-invitation-claim",
+        "individual-profile-invitation-read",
+        "individual-profile-invitation-delete",
+        "employer-profile-create",
+        "employer-profile-read",
+        "employer-profile-update",
+        "employer-profile-invite",
+        "employer-profile-link-update",
+        "employer-profile-link-read",
+        "employer-profile-link-delete",
+        "employer-profile-invitation-claim",
+        "employer-profile-invitation-read",
+        "employer-profile-invitation-delete"
+      ]
+    },
+    {
+      "applicationRole": "um:individual-admin",
+      "name": "Individual Admin",
+      "description": "Can create, update and delete individual profiles.",
+      "group": "user-management",
+      "capabilities": [
+        "individual-profile-read",
+        "individual-profile-update",
+        "individual-profile-invite",
+        "individual-profile-link-update",
+        "individual-profile-link-read",
+        "individual-profile-link-delete",
+        "individual-profile-invitation-claim",
+        "individual-profile-invitation-read",
+        "individual-profile-invitation-delete"
+      ]
+    },
+    {
+      "applicationRole": "um:individual-user",
+      "name": "Individual User",
+      "description": "Can view individual profiles.",
+      "group": "user-management",
+      "capabilities": [
+        "individual-profile-read"
+      ]
+    },
+    {
+      "applicationRole": "um:employer-admin",
+      "name": "Employer Admin",
+      "description": "Can create, update and delete employer profiles.",
+      "group": "user-management",
+      "capabilities": [
+        "employer-profile-read",
+        "employer-profile-update",
+        "employer-profile-invite",
+        "employer-profile-link-update",
+        "employer-profile-link-read",
+        "employer-profile-link-delete",
+        "employer-profile-invitation-claim",
+        "employer-profile-invitation-read",
+        "employer-profile-invitation-delete"
+      ]
+    },
+    {
+      "applicationRole": "um:employer-user",
+      "name": "Employer User",
+      "description": "Can view employer profiles.",
+      "group": "user-management",
+      "capabilities": [
+        "employer-profile-read"
+      ]
+    }
+  ]
+}

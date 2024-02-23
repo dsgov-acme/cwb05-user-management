@@ -1,0 +1,73 @@
+server:
+  servlet:
+    context-path: /um
+  forward-headers-strategy: framework
+spring:
+  sleuth:
+    sampler:
+      probability: 1 # Valid values [0.0 - 1.0]
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/liquibase-changelog.xml
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_CONNECTION_URL}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jackson:
+    serialization:
+      write-dates-with-zone-id: true
+      write-dates-as-timestamps: false
+    deserialization:
+      adjust_dates_to_context_time-zone: false
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    # url: jdbc:postgresql://localhost:5438/workmanager
+    url: ${DB_CONNECTION_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  cloud:
+    gcp:
+      project-id: ${GCP_PROJECT_ID}
+      pubsub: # if the emulator host is set to false it will use the real pubsub service
+        emulator-host: ${PUBSUB_EMULATOR_HOST:false}
+        emulator-enabled: ${PUBSUB_EMULATOR_ENABLED:false}
+      sql:
+        enabled: false
+      firestore:
+        enabled: false
+  config:
+    import: sm://
+
+management:
+  endpoints:
+    web:
+      cors:
+        allow-credentials: true
+        allowed-origins: ${ALLOWED_ORIGINS}
+        allowed-methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        allowed-headers: "*"
+      exposure:
+        include: "*"
+
+auth:
+  token-filter:
+    self-signed:
+      issuer: ${TOKEN_ISSUER}
+      public-key: ${SELF_SIGN_PUBLIC_KEY}
+
+cerbos:
+  uri: ${CERBOS_URI}
+  baseUrl: "https://cerbos-url.com"
+  username: "cerbosUser"
+  password: "cerbosPassword"
+
+events:
+  subscriber:
+    subscriptions: ${PUBSUB_SUBSCRIPTIONS}
+    topics: ${SUBSCRIBER_TOPICS}
+  publisher:
+    topics: ${PUBLISHER_TOPICS}

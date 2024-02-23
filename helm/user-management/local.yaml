@@ -1,0 +1,34 @@
+environment: "local"
+
+postgres:
+  enabled: false
+  persistence:
+    size: 1Gi
+  env:
+    POSTGRES_DB: "local-user-management-db"
+    POSTGRES_HOST: 'postgres-14-alpine'
+    POSTGRES_PASSWORD: "root"
+    POSTGRES_PORT: 5432
+    POSTGRES_USER: "root"
+
+net:
+  host: "api.cwb05.test"
+
+env:
+  ALLOWED_ORIGINS: "http://localhost:4200, http://localhost:4201, http://agency.cwb05.test, http://public.cwb05.test, http://employer.cwb05.test"
+  DB_CONNECTION_URL: "jdbc:postgresql://user-management-postgres:5432/local-user-management-db"
+  DB_USERNAME: "root"
+  DB_PASSWORD: "root"
+  GCP_PROJECT_ID: "cwb05-dev"
+  CERBOS_URI: "127.0.0.1:3592"
+  SELF_SIGN_PUBLIC_KEY: "${sm://projects/cwb05-dev/secrets/cwb05-self-signed-token-public-key/versions/latest}"
+  TOKEN_PRIVATE_KEY_SECRET: "cwb05-self-signed-token-private-key"
+  TOKEN_ISSUER: "cwb05"
+  TOKEN_PRIVATE_KEY_VERSION: "latest"
+  OTEL_SAMPLER_PROBABILITY: 1.0 # valid values: [0.0, 1.0]
+  PUBSUB_EMULATOR_HOST: "pubsub-emulator-service:8085" # set actual "host:port" to enable or false to disable
+  PUBSUB_EMULATOR_ENABLED: true # set to true to enable emulator
+  # topics separated by comma
+  PUBSUB_SUBSCRIPTIONS: "projects/cwb05-dev/subscriptions/APPLICATION_ROLE_REPORTING_SUBSCRIPTION"
+  SUBSCRIBER_TOPICS: "APPLICATION_ROLE_REPORTING"
+  PUBLISHER_TOPICS: projects/cwb05-dev/topics/APPLICATION_ROLE_REPORTING

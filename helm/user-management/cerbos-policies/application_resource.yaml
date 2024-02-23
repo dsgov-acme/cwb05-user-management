@@ -1,0 +1,9 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: "default"
+  resource: application
+  rules:
+    - actions: ["view"]
+      roles:
+        - admin
+      effect: EFFECT_ALLOW

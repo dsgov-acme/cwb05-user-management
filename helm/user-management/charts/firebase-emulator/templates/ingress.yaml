@@ -1,0 +1,38 @@
+# Conditionally create the Ingress for local; unneeded in GKE.
+{{- if .Values.createIngress }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: user-management-firebase-ingress
+  namespace: {{ .Values.namespace | default "dsgov" }}
+spec:
+  rules:
+    - host: {{ .Values.net.host }}
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: user-management-firebase-emulator
+                port:
+                  number: 4000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: user-management-firebase-ingress-auth
+  namespace: {{ .Values.namespace | default "dsgov" }}
+spec:
+  rules:
+    - host: {{ .Values.net.authHost }}
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: user-management-firebase-emulator
+                port:
+                  number: 9099
+{{- end }}

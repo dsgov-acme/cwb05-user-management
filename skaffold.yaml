@@ -1,0 +1,128 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: user-management
+profiles:
+  - name: local
+    build:
+      googleCloudBuild:
+        projectId: cwb05-services
+        gradleImage: gradle:8.2.1-jdk17-alpine
+      artifacts:
+        - image: us-east4-docker.pkg.dev/cwb05-services/application/cwb05-user-management
+          jib:
+            type: gradle
+            project: service
+            args:
+              - "-Djib.container.environment=SPRING_PROFILES_ACTIVE=cloud"
+    deploy:
+      helm:
+        releases:
+        - name: cwb05-user-management
+          createNamespace: true
+          chartPath: helm/user-management
+          # Ref: https://skaffold.dev/docs/deployers/helm/#image-configuration
+          setValueTemplates:
+            image.repository: "{{.IMAGE_REPO_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+            image.tag: "{{.IMAGE_TAG_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}@{{.IMAGE_DIGEST_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+          setValues:
+            environment: user-management
+          valuesFiles:
+            - helm/user-management/values.yaml
+            - helm/user-management/local.yaml
+  - name: minikube
+    activation:
+      - kubeContext: minikube
+    build:
+      artifacts:
+        - image: user-management
+          jib:
+            project: service
+            args:
+              - "-Djib.container.environment=SPRING_PROFILES_ACTIVE=local"
+    manifests:
+      helm:
+        releases:
+          - name: user-management
+            createNamespace: true
+            chartPath: helm/user-management
+            valuesFiles:
+              - helm/user-management/values.yaml
+              - helm/user-management/local.yaml
+            setValues:
+              environment: local
+              net.readinessProbe.initialDelaySeconds: 30
+              pullPolicy: IfNotPresent
+              postgres.enabled: "true"
+            setValueTemplates:
+              image.repository: user-management
+              image.tag: user-management
+    deploy:
+      statusCheckDeadlineSeconds: 60
+      tolerateFailuresUntilDeadline: true
+      helm: {}
+    portForward:
+      - resourceType: service
+        resourceName: user-management
+        namespace: cwb05
+        port: 80
+        localPort: 8080
+      - resourceType: service
+        resourceName: user-management-postgres
+        namespace: cwb05
+        port: 5432
+        localPort: 5438
+  - name: dev
+    build:
+      googleCloudBuild:
+        projectId: cwb05-services
+        gradleImage: gradle:8.2.1-jdk17-alpine
+      artifacts:
+        - image: us-east4-docker.pkg.dev/cwb05-services/application/cwb05-user-management
+          jib:
+            type: gradle
+            project: service
+            args:
+              - "-Djib.container.environment=SPRING_PROFILES_ACTIVE=cloud"
+    deploy:
+      helm:
+        releases:
+        - name: cwb05-user-management
+          createNamespace: true
+          chartPath: helm/user-management
+          # Ref: https://skaffold.dev/docs/deployers/helm/#image-configuration
+          setValueTemplates:
+            image.repository: "{{.IMAGE_REPO_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+            image.tag: "{{.IMAGE_TAG_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}@{{.IMAGE_DIGEST_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+          setValues:
+            environment: user-management
+          valuesFiles:
+            - helm/user-management/values.yaml
+            - helm/user-management/dev.yaml
+  - name: prod
+    build:
+      googleCloudBuild:
+        projectId: cwb05-services
+        gradleImage: gradle:8.2.1-jdk17-alpine
+      artifacts:
+        - image: us-east4-docker.pkg.dev/cwb05-services/application/cwb05-user-management
+          jib:
+            type: gradle
+            project: service
+            args:
+              - "-Djib.container.environment=SPRING_PROFILES_ACTIVE=cloud"
+    deploy:
+      helm:
+        releases:
+        - name: cwb05-user-management
+          createNamespace: true
+          chartPath: helm/user-management
+          # Ref: https://skaffold.dev/docs/deployers/helm/#image-configuration
+          setValueTemplates:
+            image.repository: "{{.IMAGE_REPO_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+            image.tag: "{{.IMAGE_TAG_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}@{{.IMAGE_DIGEST_us_east4_docker_pkg_dev_cwb05_services_application_cwb05_user_management}}"
+          setValues:
+            environment: user-management
+          valuesFiles:
+            - helm/user-management/values.yaml
+            - helm/user-management/prod.yaml

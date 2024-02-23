@@ -1,0 +1,11 @@
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: "default"
+  resource: language
+  rules:
+    - actions: ["view"]
+      roles:
+        - basic
+        - reader
+        - admin
+      effect: EFFECT_ALLOW
